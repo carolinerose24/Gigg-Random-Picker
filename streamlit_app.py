@@ -170,7 +170,7 @@ on = st.toggle("Show Help Images")
 if on:
     st.image("images/admin_dropdown.png", caption = "Admin Dropdown Menu", width=250)
     st.image("images/tokens.png", caption = "Developer Dropdown Menu", width=250)
-    st.image("images/create_token.png", caption = "Token Creation Page",width=250)
+    st.image("images/create_token.png", caption = "Token Creation Page")
 
 
 
@@ -195,13 +195,13 @@ with st.form("my_form"):
         min_value=1, max_value=20, value="min"
     )
    last_seen_pick = st.selectbox(
-        "Filter by the last time a user visited the community site? (Last Seen Date)",
+        "Filter by the last time a user visited the community site?",
         ("None", "Today", "This Week", "This Month"),
-    )
+    ) # (Last Seen Date)
    account_created_pick = st.selectbox(
-        "Filter by the date of account creation? (Filter to members who made their account...)",
+        "Filter by the date of account creation?",
         ("None", "This Month", "Last 2 Months", "On Launch")
-    )   
+    )   # (Filter to members who made their account...)
    filter_admins_check = st.checkbox("Filter out Admins and Gigg accounts", value = True)
    
    submit = st.form_submit_button('Submit my picks')
@@ -215,8 +215,3 @@ if submit:
     except ValueError as e:
         st.error(f"There are not {picks} members that fit these parameters. Please try a smaller number or choose different filters. ")
 
-
-
-
-# make 1st image smaller
-# only show the name and email
