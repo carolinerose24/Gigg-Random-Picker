@@ -168,9 +168,9 @@ You only need to create a V2 token once for each community because you can alway
 on = st.toggle("Show Help Images")
 
 if on:
-    st.image("images/admin_dropdown.png", caption = "Admin Dropdown Menu", width=250)
-    st.image("images/tokens.png", caption = "Developer Dropdown Menu", width=250)
-    st.image("images/create_token.png", caption = "Token Creation Page")
+    st.image("https://drive.google.com/file/d/1mn7IfedKYgZugI7EQm4_QIKhmUmVlDBQ/view?usp=drive_link", caption = "Admin Dropdown Menu", width=250)
+    st.image("https://drive.google.com/file/d/1SqmincwR7HcDd1hZ4rCMgaHmUE6Q6UxM/view?usp=drive_link", caption = "Developer Dropdown Menu", width=250)
+    st.image("https://drive.google.com/file/d/1jj4Vn4FVhC9fA7ebBSTfJWXcJNuupNhU/view?usp=drive_link", caption = "Token Creation Page")
 
 
 
