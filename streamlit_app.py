@@ -152,6 +152,8 @@ members = pd.DataFrame(columns=['name', 'email', 'created_at', 'last_seen_at'])
 
 
 
+# ------------------------------------------------------------------------------------------
+
 '''
 # Random User Picker:
 This is an app for picking a random user from a circle community based on a few filters. The first time you run it, it may take a couple minutes to pull everything from the API, but it should be much faster each time after that.
@@ -159,7 +161,9 @@ This is an app for picking a random user from a circle community based on a few 
 ### To Get Your Token:
 To use this app, you need a Circle V2 Token. If you are an admin for a community, you can click on the community name/drop down in the top left corner of the community site. If you navigate to the developer's page and then the token page, you can create a V2 token (not V1 or headless of data!!). 
 '''
-st.image("images/admin_dropdown.jpg", caption = "Image of the admin dropdown menu")
+st.image("images/admin_dropdown.png", caption = "Image of the admin dropdown menu")
+st.image("images/tokens.png", caption = "Image of the developer dropdown menu")
+st.image("images/create_token.png", caption = "Image of the token creation page")
 
 
 token = "Token " + st.text_input("Input Your V2 Community Token Here", "")
