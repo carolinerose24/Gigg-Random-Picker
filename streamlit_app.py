@@ -156,41 +156,50 @@ members = pd.DataFrame(columns=['name', 'email', 'created_at', 'last_seen_at'])
 
 '''
 # Random User Picker:
-This is an app for picking a random user from a circle community based on a few filters. The first time you run it, it may take a couple minutes to pull everything from the API, but it should be much faster each time after that.
+This is an app for picking a random user from a circle community based on a few filters. It may take a couple minutes to pull all the users from the API the first time you make a random user request, but it should be much faster each time after that.
 
 ### To Get Your Token:
-To use this app, you need a Circle V2 Token. If you are an admin for a community, you can click on the community name/drop down in the top left corner of the community site. If you navigate to the developer's page and then the token page, you can create a V2 token (not V1 or headless of data!!). 
+To use this app, you need a Circle Admin V2 Token. If you are an admin for a community, you can click on the community name/drop down in the top left corner of the community site. 
+If you navigate to the developer's page and then the token page, you can create a V2 token (not V1 or Headless or Data!!). 
+You only need to create a V2 token once for each community because you can always use the same token after that.
 '''
-st.image("images/admin_dropdown.png", caption = "Image of the admin dropdown menu")
-st.image("images/tokens.png", caption = "Image of the developer dropdown menu")
-st.image("images/create_token.png", caption = "Image of the token creation page")
+
+#button to show images or not?? or slider...
+on = st.toggle("Show Help Images")
+
+if on:
+    st.image("images/admin_dropdown.png", caption = "Admin Dropdown Menu", width=250)
+    st.image("images/tokens.png", caption = "Developer Dropdown Menu", width=250)
+    st.image("images/create_token.png", caption = "Token Creation Page",width=250)
 
 
-token = "Token " + st.text_input("Input Your V2 Community Token Here", "")
+
+
+token = "Token " + st.text_input("Paste your Admin V2 Community Token here, then press enter to check if it is a valid token.", "")
 if token != "Token ":
 
     #if checking the token is valid, print that it is valid, otherwise print something about it being invalid
     token_response = str(check_community(token))
     if token_response == '401':
-        st.write("This in an invalid token, please try again.")
+        st.write("Invalid Token! Please try again.")
     else:
-        st.write("This token has the community id: " + str(check_community(token))) 
+        st.write("Valid Token for the community with the id: " + str(check_community(token))) 
 else:
     members = st.empty()
     
 
 with st.form("my_form"):
-   st.write("Choose the filters you want here:")
+   st.write("Choose the filters you want here: (choose none if you don't want to use a filter)")
    picks = st.number_input(
         label = "How many random users do you want to pick?", 
         min_value=1, max_value=20, value="min"
     )
    last_seen_pick = st.selectbox(
-        "Last Seen Date",
+        "Filter by the last time a user visited the community site? (Last Seen Date)",
         ("None", "Today", "This Week", "This Month"),
     )
    account_created_pick = st.selectbox(
-        "Account Creation Date",
+        "Filter by the date of account creation? (Filter to members who made their account...)",
         ("None", "This Month", "Last 2 Months", "On Launch")
     )   
    filter_admins_check = st.checkbox("Filter out Admins and Gigg accounts", value = True)
@@ -202,7 +211,12 @@ if submit:
     members = pull_all_users_from_APIs(token)
     try:
         picks_df = get_random_members(members, number_picks=picks, last_seen_option=last_seen_pick, created_option=account_created_pick, filter_admins=filter_admins_check)
-        st.dataframe(picks_df)
+        st.dataframe(picks_df[['name', 'email']])
     except ValueError as e:
         st.error(f"There are not {picks} members that fit these parameters. Please try a smaller number or choose different filters. ")
 
+
+
+
+# make 1st image smaller
+# only show the name and email
