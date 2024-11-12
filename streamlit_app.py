@@ -212,7 +212,7 @@ if submit:
     try:
         picks_df = get_random_members(members, number_picks=picks, last_seen_option=last_seen_pick, created_option=account_created_pick, filter_admins=filter_admins_check)
         picks_df.reset_index(drop=True, inplace=True)
-        st.dataframe(picks_df[['name', 'email']])
+        st.dataframe(picks_df[['name', 'email']], width=400)
     except ValueError as e:
         st.error(f"There are not {picks} members that fit these parameters. Please try a smaller number or choose different filters. ")
 
