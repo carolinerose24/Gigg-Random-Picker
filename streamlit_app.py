@@ -146,15 +146,16 @@ def check_community(token):
     
 members = pd.DataFrame(columns=['name', 'email', 'created_at', 'last_seen_at'])
 
+
 # ------------------------------------------------------------------------------------------
 
 '''
 # Gigg Community Random User Picker:
-This is an app for picking a random user from a circle community based on a few filters. It may take a couple minutes to pull all the users from the API the first time you make a random user request, but it should be much faster each time after that.
+This is an app for picking a random user from a circle community based on a few filters. It may take a couple minutes to pull all the users from the API the first time you make a random user request.
 '''
 
 #link to the other site here?
-st.link_button("See our other page for post valuation:", "https://gigg-post-valuation.streamlit.app/")
+st.link_button("Link to Post Valuation Page:", "https://gigg-post-valuation.streamlit.app/")
 
 
 
@@ -166,6 +167,12 @@ You only need to create a V2 token once for each community because you can alway
 '''
 
 #button to show images or not?? or slider...
+# '''
+# #### TOGGLE FOR HELP IMAGES
+# '''
+
+st.subheader(":red[TOGGLE FOR HELP IMAGES]")
+
 on = st.toggle("Show Help Images")
 
 if on:
@@ -190,6 +197,7 @@ if token != "":
         st.write("Valid Token for the community with the id: " + str(check_community(token))) 
 else:
     members = st.empty()
+    token_response = 1
     
 
 with st.form("my_form"):
@@ -214,8 +222,8 @@ with st.form("my_form"):
 if submit:
 
     #need to first check if there is a token, and if not use TOAST
-    if token_response == 0:
-        st.toast("Can't pull users with a bad token")
+    if token_response == 0 or token_response == 1:
+        st.toast("Can't pull users with a bad token!!")
     else:
         members = pull_all_users_from_APIs(token)
         try:
