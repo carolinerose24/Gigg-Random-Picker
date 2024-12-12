@@ -14,20 +14,16 @@ st.set_page_config(
 @st.cache_data(ttl='1d')
 def pull_all_users_from_APIs(token):
     base_url = "https://app.circle.so/api/admin/v2/community_members?per_page=100&page="
-    headers = {'Authorization': token}
+    headers = {'Authorization': "Token " + token}
     df_all = pd.DataFrame(columns=['name', 'email', 'created_at', 'last_seen_at'])
     page = 1  
     while True:
         url = base_url + str(page)
         response = requests.get(url, headers=headers)
-        # data = response.json()
-        # records = data.get('records', [])
-
         data = pd.json_normalize(response.json())
         records_list = data['records'][0]
         if not records_list: 
             break
-        # df = pd.json_normalize(records)
         df = pd.json_normalize(records_list)
         df = df[['name', 'email', 'created_at', 'last_seen_at']] #comments_count, posts_count, activity_score
         df_all = pd.concat([df_all, df], ignore_index=True)
@@ -137,7 +133,7 @@ def filter_activity_score(df, score):
 def check_community(token):
     #can't get the community name anywhere? could just return the community ID for now???
     url = "https://app.circle.so/api/admin/v2/community_members?per_page=1&page=1"
-    headers = {'Authorization': token}
+    headers = {'Authorization': "Token " + token}
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
@@ -146,18 +142,23 @@ def check_community(token):
         df = pd.json_normalize(records_list)
         return df['community_id'][0]
     else:
-        return response.status_code
+        return 0
     
 members = pd.DataFrame(columns=['name', 'email', 'created_at', 'last_seen_at'])
-
-
 
 # ------------------------------------------------------------------------------------------
 
 '''
-# Random User Picker:
+# Gigg Community Random User Picker:
 This is an app for picking a random user from a circle community based on a few filters. It may take a couple minutes to pull all the users from the API the first time you make a random user request, but it should be much faster each time after that.
+'''
 
+#link to the other site here?
+st.link_button("See our other page for post valuation:", "https://gigg-post-valuation.streamlit.app/")
+
+
+
+'''
 ### To Get Your Token:
 To use this app, you need a Circle Admin V2 Token. If you are an admin for a community, you can click on the community name/drop down in the top left corner of the community site. 
 If you navigate to the developer's page and then the token page, you can create a V2 token (not V1 or Headless or Data!!). 
@@ -178,12 +179,12 @@ if on:
 
 
 
-token = "Token " + st.text_input("Paste your Admin V2 Community Token here, then press enter to check if it is a valid token.", "")
-if token != "Token ":
+token = st.text_input("Paste your Admin V2 Community Token here, then press enter to check if it is a valid token.", "")
+if token != "":
 
     #if checking the token is valid, print that it is valid, otherwise print something about it being invalid
     token_response = str(check_community(token))
-    if token_response == '401':
+    if token_response == 0:
         st.write("Invalid Token! Please try again.")
     else:
         st.write("Valid Token for the community with the id: " + str(check_community(token))) 
@@ -192,30 +193,35 @@ else:
     
 
 with st.form("my_form"):
-   st.write("Choose the filters you want here: (choose none if you don't want to use a filter)")
-   picks = st.number_input(
-        label = "How many random users do you want to pick?", 
-        min_value=1, max_value=20, value="min"
-    )
-   last_seen_pick = st.selectbox(
+    st.write("Choose the filters you want here: (choose none if you don't want to use a filter)")
+    picks = st.slider("How many random users do you want to pick?", 1, 20, 5)
+
+    last_seen_pick = st.selectbox(
         "Filter by the last time a user visited the community site?",
         ("None", "Today", "This Week", "This Month"),
     ) # (Last Seen Date)
-   account_created_pick = st.selectbox(
+    account_created_pick = st.selectbox(
         "Filter by the date of account creation?",
-        ("None", "This Month", "Last 2 Months", "On Launch")
+        ("None", "This Month", "Last 2 Months")
     )   # (Filter to members who made their account...)
-   filter_admins_check = st.checkbox("Filter out Admins and Gigg accounts", value = True)
+
+    filter_admins_check = st.checkbox("Filter out Admins and Gigg accounts", value = True)
+    st.write("Note that this only filters out users with \'admin\' in their username or @gigg.com in their email.")
    
-   submit = st.form_submit_button('Submit my picks')
+    submit = st.form_submit_button('Submit my picks')
 
 
 if submit:
-    members = pull_all_users_from_APIs(token)
-    try:
-        picks_df = get_random_members(members, number_picks=picks, last_seen_option=last_seen_pick, created_option=account_created_pick, filter_admins=filter_admins_check)
-        picks_df.reset_index(drop=True, inplace=True)
-        st.dataframe(picks_df[['name', 'email']], width=400)
-    except ValueError as e:
-        st.error(f"There are not {picks} members that fit these parameters. Please try a smaller number or choose different filters. ")
+
+    #need to first check if there is a token, and if not use TOAST
+    if token_response == 0:
+        st.toast("Can't pull users with a bad token")
+    else:
+        members = pull_all_users_from_APIs(token)
+        try:
+            picks_df = get_random_members(members, number_picks=picks, last_seen_option=last_seen_pick, created_option=account_created_pick, filter_admins=filter_admins_check)
+            picks_df.reset_index(drop=True, inplace=True)
+            st.dataframe(picks_df[['name', 'email']], width=400)
+        except ValueError as e:
+            st.error(f"There are not {picks} members that fit these parameters. Please try a smaller number or choose different filters. ")
 
