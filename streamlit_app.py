@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import random
+import matplotlib.pyplot as plt
 
 
 # Set the title and favicon that appear in the Browser's tab bar.
@@ -66,6 +67,9 @@ def get_random_members(df, number_picks=1, last_seen_option="None",
     st.write(f"There were {len(df)} people in the final group, so the odds were {number_picks}/{len(df)}, or {number_picks / len(df) * 100:.3f}%")
 
     return pd.DataFrame(df).sample(n=number_picks)
+
+
+# Add filter by people's name starting with XX letters
 
 
 def filter_last_seen(df, date):
@@ -144,6 +148,83 @@ def check_community(token):
     else:
         return 0
     
+
+def members_last_seen_graph(df):
+    # Last Seen Chart
+
+    today = pd.Timestamp.now(tz='UTC')
+    start_of_today = today.normalize()  # Resets time to 00:00:00
+    today_filter = df['last_seen_at'] >= start_of_today
+    this_week_filter = (df['last_seen_at'] >= (today - pd.DateOffset(days=today.weekday()))) & ~today_filter
+    this_month_filter = (df['last_seen_at'] >= pd.to_datetime(f"{today.year}-{today.month}-01", utc=True)) & ~this_week_filter
+    last_month_filter = (df['last_seen_at'].dt.month == (today.month - 1)) & (df['last_seen_at'].dt.year == today.year) & ~this_month_filter
+
+    # Calculate the number of users in each category
+    seen_today_count = df[today_filter].shape[0]
+    seen_in_last_week_count = df[this_week_filter].shape[0]
+    seen_in_last_month_count = df[this_month_filter].shape[0]
+    seen_in_last_two_months_count = df[this_month_filter | last_month_filter].shape[0]
+    total_users_count = len(df)  # Total users count without any calculation
+
+    # Create a dictionary with the counts for visualization
+    data = {
+        'Seen Today': seen_today_count,
+        'Seen in Last Week': seen_in_last_week_count,
+        'Seen in Last Month': seen_in_last_month_count,
+        'Seen in Last 2 Months': seen_in_last_two_months_count,
+        'Total Users': total_users_count  # Directly setting this to the length of all_users
+    }
+
+    # Calculate cumulative values, except for the last column
+    cumulative_data = []
+    cumulative_sum = 0
+    for key in data.keys():
+        if key == 'Total Users':
+            cumulative_data.append(data[key])  # Append the total users directly
+        else:
+            cumulative_sum += data[key]
+            cumulative_data.append(cumulative_sum)
+
+    plt.figure(figsize=(10, 6))
+    bars = plt.bar(data.keys(), cumulative_data, color='#d0ba71')
+
+    for bar in bars:
+        yval = bar.get_height()  # Get the height of each bar
+        plt.text(bar.get_x() + bar.get_width()/2, yval, int(yval), 
+                 ha='center', va='bottom', fontsize=14)  # Display the height on top of the bar
+    plt.title('Cumulative Number of Users Last Seen', fontsize=18)
+    plt.ylabel('Cumulative Number of Users', fontsize=16)
+    plt.xlabel('Time Period', fontsize=16)
+    plt.tight_layout()
+    st.pyplot(plt)
+
+
+def accounts_created_graph(df):
+    df = df[df['created_at'] >= '2024-01-01']
+    df['year_month'] = df['created_at'].dt.to_period('M')
+    monthly_user_counts = df.groupby('year_month').size()
+
+    # Plot the data
+    plt.figure(figsize=(12, 6))  # Set figure size
+    bars = monthly_user_counts.plot(kind='bar', color='#d0ba71')
+    for i, count in enumerate(monthly_user_counts):
+        plt.text(i, count, int(count), ha='center', va='bottom', fontsize=14)
+
+    # Add labels and title
+    plt.title('Number of New Members by Month', fontsize=18)
+    plt.ylabel('Number of Users', fontsize=16)
+    plt.xlabel('Month', fontsize=16)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    st.pyplot(plt)
+
+
+
+
+
+
+
+
 members = pd.DataFrame(columns=['name', 'email', 'created_at', 'last_seen_at'])
 
 
@@ -233,3 +314,48 @@ if submit:
         except ValueError as e:
             st.error(f"There are not {picks} members that fit these parameters. Please try a smaller number or choose different filters. ")
 
+
+
+st.divider()
+
+st.subheader("Things I would like to add eventually (depending on Circle)")
+'''
+- Activity Score
+- Comments Left
+- Likes Left
+'''
+
+
+st.divider()
+
+stats_button = st.button("Generate Statistics about your users:")
+if stats_button:
+    if token_response == 0 or token_response == 1:
+        st.toast("Can't pull users with a bad token!!")
+    else:
+        members = pull_all_users_from_APIs(token)
+        st.write(f"There are {len(members)} members in this community.")
+        st.write("Here is a cumulative graph showing when members were last seen:")
+        members_last_seen_graph(members)
+        st.divider()
+        accounts_created_graph(members)
+
+
+        #accounts made by month...
+        
+
+    
+    #what should i show here
+    #total number of users
+    #how many last seen today,
+    #last seen this week, this month??
+    # 
+
+
+    #when accounts were made X last seen
+    #last seen today, this week, this month, after that --> pie chart?
+
+    # growth of account creation --> as people make their accounts
+    #how many made it when (bar chart???)
+    #
+    
