@@ -224,6 +224,37 @@ def accounts_created_graph(df):
 
 
 
+def search_people(df, included_names):
+        # Split the excluded_list string into a list of names (handle spaces and remove empty names)
+    names = [name.strip().lower() for name in included_names.split(',') if name.strip()]
+    
+    # Normalize the 'Author' column to lowercase for comparison
+    df['name_normalized'] = df['name'].str.lower()
+    
+    # Check for names in excluded_names that are not in the DataFrame
+    invalid_names = [name for name in names if name not in df['name_normalized'].unique()]
+    
+    # Create an alert for invalid names
+    if invalid_names:
+        st.toast(f"Invalid name(s): {', '.join(invalid_names)}")
+
+    # Filter the DataFrame based on exclude flag
+    # if exclude:
+    #     filtered_df = df[~df['Author_normalized'].isin(excluded_names)]
+    # else:
+    filtered_df = df[df['name_normalized'].isin(names)]
+    
+    # Drop the temporary normalized column before returning
+    filtered_df = filtered_df.drop(columns=['name_normalized'])
+    filtered_df.reset_index(inplace=True, drop=True)
+
+    #also strip the timezone/stuff and just leave the date
+    filtered_df['created_at'] = filtered_df['created_at'].dt.date
+    filtered_df['last_seen_at'] = filtered_df['last_seen_at'].dt.date
+    return filtered_df[['name', 'last_seen_at', 'created_at', 'email']]
+
+
+
 
 members = pd.DataFrame(columns=['name', 'email', 'created_at', 'last_seen_at'])
 
@@ -316,6 +347,39 @@ if submit:
 
 
 
+
+st.divider()
+#search a person and get everything back about them......
+with st.form("person_search"):
+    st.subheader("Person Search")
+    st.write("Input a name to see more information about them:")
+    included_people = st.text_input("Input exact names here (comma seperated)", "")
+    person_submit = st.form_submit_button('Search')
+if person_submit:
+    
+    if token_response == 0 or token_response == 1:
+        st.toast("Can't do this with a bad token")
+    else:
+        members = pull_all_users_from_APIs(token)
+        df = search_people(members, included_people)
+        st.dataframe(df)
+        #would like this to later include # of likes/comments and activity score...
+
+# change this so it runs an API call???
+#sort so that when it returns a list it does it alphabetically?
+# or sort by most recently seen?????
+
+
+
+
+
+
+
+
+
+
+
+
 st.divider()
 
 st.subheader("Things I would like to add eventually (depending on Circle)")
@@ -324,6 +388,7 @@ st.subheader("Things I would like to add eventually (depending on Circle)")
 - Comments Left
 - Likes Left
 '''
+
 
 
 st.divider()
@@ -358,4 +423,7 @@ if stats_button:
     # growth of account creation --> as people make their accounts
     #how many made it when (bar chart???)
     #
+
+
+
     
