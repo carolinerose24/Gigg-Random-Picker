@@ -3,6 +3,8 @@ import pandas as pd
 import requests
 import random
 import matplotlib.pyplot as plt
+from datetime import datetime
+
 
 
 # Set the title and favicon that appear in the Browser's tab bar.
@@ -342,6 +344,7 @@ if submit:
             picks_df = get_random_members(members, number_picks=picks, last_seen_option=last_seen_pick, created_option=account_created_pick, filter_admins=filter_admins_check)
             picks_df.reset_index(drop=True, inplace=True)
             st.dataframe(picks_df[['name', 'email']], width=400)
+            st.write("You can download this table as a csv with the button in the top right corner when you hover over the table.")
         except ValueError as e:
             st.error(f"There are not {picks} members that fit these parameters. Please try a smaller number or choose different filters. ")
 
@@ -399,7 +402,13 @@ if stats_button:
         st.toast("Can't pull users with a bad token!!")
     else:
         members = pull_all_users_from_APIs(token)
+        members['last_seen_at'] = pd.to_datetime(members['last_seen_at'])
+        today = datetime.now().date()
+        today_members = members[members['last_seen_at'].dt.date == today]
         st.write(f"There are {len(members)} members in this community.")
+        st.write(f"There are {len(today_members)} users that have been seen today.")
+
+
         st.write("Here is a cumulative graph showing when members were last seen:")
         members_last_seen_graph(members)
         st.divider()
@@ -426,4 +435,5 @@ if stats_button:
 
 
 
+#last seen - could look at the HOUR like the specific hour that thye visited, might be interesting to look at? see when people are online?
     
