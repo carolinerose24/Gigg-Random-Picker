@@ -327,11 +327,11 @@ with st.form("my_form"):
         ("None", "This Month", "Last 2 Months")
     )   # (Filter to members who made their account...)
 
-    num_posts = st.number_input("Filter by users with at least X posts: ", 0, 100)
-    num_comments = st.number_input("Filter by users who have left at least X comments: ", 0, 100)
+    num_posts = st.number_input("Filter by users who have made at least ___ post(s): ", 0, 100)
+    num_comments = st.number_input("Filter by users who have left at least ___ comment(s): ", 0, 100)
 
     filter_admins_check = st.checkbox("Filter out Admins and Gigg accounts", value = True)
-    st.write("Note that this only filters out users with \'admin\' in their username or @gigg.com in their email.")
+    st.write("Note that this only filters out users with \'admin\' in their username or @gigg.com in their email at this time.")
    
     submit = st.form_submit_button('Submit my picks')
 
@@ -391,9 +391,12 @@ st.divider()
 
 st.subheader("Things I would like to add eventually (depending on Circle)")
 '''
-- Activity Score
-- Comments Left
-- Likes Left
+Activity Score: (not in available in Admin V2 yet)
+- Overall Activity Score 
+- Presense Score
+- Participation Score
+- Contribution Score
+- Connection Score
 '''
 
 
