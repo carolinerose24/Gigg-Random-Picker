@@ -28,7 +28,7 @@ def pull_all_users_from_APIs(token):
         if not records_list: 
             break
         df = pd.json_normalize(records_list)
-        df = df[['name', 'email', 'created_at', 'last_seen_at']] #comments_count, posts_count, activity_score
+        df = df[['name', 'email', 'created_at', 'last_seen_at', 'posts_count', 'comments_count']] #activity_score
         df_all = pd.concat([df_all, df], ignore_index=True)
         # if page % 5 == 0:
         #     st.write("Made the API call for page: " + str(page))
@@ -40,7 +40,7 @@ def pull_all_users_from_APIs(token):
     return df_all
 
 def get_random_members(df, number_picks=1, last_seen_option="None",
-                        # posts_count=0, comments_count=0,
+                        posts_count=0, comments_count=0,
                         created_option="None", filter_admins=True):#, activity_score=0):
     
 
@@ -51,11 +51,11 @@ def get_random_members(df, number_picks=1, last_seen_option="None",
     if created_option != "None":
         df = filter_account_creation(df, created_option)
 
-    # if posts_count > 0:
-    #     df = filter_posts(df, posts_count)
+    if posts_count > 0:
+        df = filter_posts(df, posts_count)
 
-    # if comments_count > 0:
-    #     df = filter_comments(df, comments_count)
+    if comments_count > 0:
+        df = filter_comments(df, comments_count)
         
     # if activity_score > 0:
     #     df = filter_activity_score(df, activity_score)
@@ -327,6 +327,9 @@ with st.form("my_form"):
         ("None", "This Month", "Last 2 Months")
     )   # (Filter to members who made their account...)
 
+    num_posts = st.number_input("Filter by users with at least X posts: ", 0, 100)
+    num_comments = st.number_input("Filter by users who have left at least X comments: ", 0, 100)
+
     filter_admins_check = st.checkbox("Filter out Admins and Gigg accounts", value = True)
     st.write("Note that this only filters out users with \'admin\' in their username or @gigg.com in their email.")
    
@@ -341,7 +344,8 @@ if submit:
     else:
         members = pull_all_users_from_APIs(token)
         try:
-            picks_df = get_random_members(members, number_picks=picks, last_seen_option=last_seen_pick, created_option=account_created_pick, filter_admins=filter_admins_check)
+            picks_df = get_random_members(members, number_picks=picks, last_seen_option=last_seen_pick, created_option=account_created_pick, 
+                                          posts_count=num_posts, comments_count=num_comments, filter_admins=filter_admins_check)
             picks_df.reset_index(drop=True, inplace=True)
             st.dataframe(picks_df[['name', 'email']], width=400)
             st.write("You can download this table as a csv with the button in the top right corner when you hover over the table.")
